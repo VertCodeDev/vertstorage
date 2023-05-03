@@ -302,20 +302,20 @@ public class MySQLStorageService<T extends StorageObject> extends StorageService
         StorageMetadata metadata = getMetadata();
         String tableName = metadata.tableName();
         // Create the SQL query
-        String sqlQuery = "SHOW TABLE STATUS LIKE '" + tableName + "'";
+        String sqlQuery = "SELECT `" + metadata.idColumnName() + "` FROM `" + tableName + "` ORDER BY `" + metadata.idColumnName() + "` DESC LIMIT 1";
         // Create the prepared statement
         try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
             // Execute the query
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new IllegalStateException("Failed to get the next id for table " + tableName + "!");
+                    return 1;
                 }
 
-                return resultSet.getInt("Auto_increment");
+                int currentId = resultSet.getInt(metadata.idColumnName());
+                return currentId + 1;
             }
-        } catch (SQLException ignored) {
-            // Return 0 if an error occurs, since it's the default value
-            return 0;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to execute query " + sqlQuery + "!", e);
         }
     }
 
