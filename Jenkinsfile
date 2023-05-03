@@ -10,9 +10,9 @@ pipeline {
 
     stages {
         stage('setup') {
-            steps {
-                git(url: 'https://github.com/VertCodeDev/${env.PROJECT_NAME}.git', branch: env.BRANCH_NAME, credentialsId: 'github-app-vertcodedev')
-            }
+          steps {
+            git(url: "https://github.com/VertCodeDev/${env.PROJECT_NAME}.git", branch: env.BRANCH_NAME, credentialsId: 'github-app-vertcodedev')
+          }
         }
 
         stage('build') {
