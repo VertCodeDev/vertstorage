@@ -4,7 +4,6 @@ pipeline {
     environment {
         PROJECT_NAME = 'vertstorage'
         JAR_NAME = 'vertstorage-1.0.0'
-        JAR_NAME_ARTIFACT = 'vertstorage'
         VERSION = '1.0.0'
     }
 
@@ -25,13 +24,6 @@ pipeline {
         stage('nexus-publish') {
             steps {
                 nexusPublisher nexusInstanceId: '1', nexusRepositoryId: 'vertcodedevelopment', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: "${env.WORKSPACE}/build/libs/${env.JAR_NAME}.jar"]], mavenCoordinate: [artifactId: "vertstorage", groupId: 'dev.vertcode', packaging: 'jar', version: env.VERSION]]]
-            }
-        }
-
-        stage('archive-build') {
-            steps {
-                sh 'cp build/libs/${env.JAR_NAME}.jar ${env.JAR_NAME_ARTIFACT}.jar'
-                archiveArtifacts artifacts: "${env.JAR_NAME_ARTIFACT}.jar", fingerprint: true
             }
         }
     }
