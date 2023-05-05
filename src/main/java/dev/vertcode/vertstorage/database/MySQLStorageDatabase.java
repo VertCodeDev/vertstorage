@@ -26,13 +26,15 @@ public class MySQLStorageDatabase implements IStorageDatabase {
         hikariConfig.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(5);
-        hikariConfig.setConnectionTimeout(30000);
-        hikariConfig.setIdleTimeout(600000);
-        hikariConfig.setMaxLifetime(1800000);
-        hikariConfig.setLeakDetectionThreshold(30000);
         hikariConfig.setPoolName("VertStoragePool - " + database);
+
+        // Optimized settings for VertStorage
+        hikariConfig.setMaximumPoolSize(8);
+        hikariConfig.setConnectionTimeout(10000);
+        hikariConfig.setMinimumIdle(2);
+        hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setIdleTimeout(300000);
+        hikariConfig.setAutoCommit(false);
 
         this.dataSource = new HikariDataSource(hikariConfig);
     }
