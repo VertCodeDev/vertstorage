@@ -8,21 +8,21 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
- * This StorageDatabase is used to connect to a MySQL database.
+ * This StorageDatabase is used to connect to a MariaDB database.
  */
-public class MySQLStorageDatabase extends SQLStorageDatabase {
+public class MariaDBStorageDatabase extends SQLStorageDatabase {
 
     private final DataSource dataSource;
 
-    public MySQLStorageDatabase(HikariConfig hikariConfig) {
+    public MariaDBStorageDatabase(HikariConfig hikariConfig) {
         this.dataSource = hikariConfig.getDataSource();
     }
 
-    public MySQLStorageDatabase(String host, int port, String username, String password, String database) {
+    public MariaDBStorageDatabase(String host, int port, String username, String password, String database) {
         HikariConfig hikariConfig = new HikariConfig();
 
         // Some default settings, people should use the constructor with the HikariConfig parameter if they want to change these.
-        hikariConfig.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
+        hikariConfig.setJdbcUrl("jdbc:mariadb://" + host + ":" + port + "/" + database);
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
         hikariConfig.setPoolName("VertStoragePool - " + database);

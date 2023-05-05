@@ -5,7 +5,7 @@ import dev.vertcode.vertstorage.StorageService;
 import dev.vertcode.vertstorage.annotations.StorageField;
 import dev.vertcode.vertstorage.annotations.StorageId;
 import dev.vertcode.vertstorage.annotations.StorageMetadata;
-import dev.vertcode.vertstorage.database.MySQLStorageDatabase;
+import dev.vertcode.vertstorage.database.SQLStorageDatabase;
 import dev.vertcode.vertstorage.util.StorageSQLUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,15 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is the storage service for MySQL for the provided StorageObject.
+ * This is the storage service for SQL (MySQL & MariaDB) for the provided StorageObject.
  *
  * @param <T> The StorageObject this service is for.
  */
-public class MySQLStorageService<T extends StorageObject> extends StorageService<T> {
+public class SQLStorageService<T extends StorageObject> extends StorageService<T> {
 
-    private final MySQLStorageDatabase storageDatabase;
+    private final SQLStorageDatabase storageDatabase;
 
-    public MySQLStorageService(MySQLStorageDatabase storageDatabase, Class<T> clazz) {
+    public SQLStorageService(SQLStorageDatabase storageDatabase, Class<T> clazz) {
         super(clazz);
         this.storageDatabase = storageDatabase;
     }
