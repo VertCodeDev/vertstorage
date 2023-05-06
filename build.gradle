@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'dev.vertcode'
@@ -10,6 +11,17 @@ targetCompatibility = 16
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'dev.vertcode'
+            artifactId 'vertstorage'
+            version project.version
+            from components.java
+        }
+    }
 }
 
 dependencies {
