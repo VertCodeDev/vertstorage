@@ -17,6 +17,7 @@ dependencies {
     implementation 'com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.2'
     implementation 'mysql:mysql-connector-java:8.0.32'
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
+    implementation 'org.mongodb:mongo-java-driver:3.12.11'
     implementation 'org.jetbrains:annotations:24.0.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.26'

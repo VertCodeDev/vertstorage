@@ -6,4 +6,6 @@ package dev.vertcode.vertstorage;
  */
 public interface IStorageDatabase {
 
+    void shutdown();
+
 }

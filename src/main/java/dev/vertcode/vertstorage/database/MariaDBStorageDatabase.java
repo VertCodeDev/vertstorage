@@ -48,4 +48,14 @@ public class MariaDBStorageDatabase extends SQLStorageDatabase {
         }
     }
 
+    @Override
+    public void shutdown() {
+        // Check if the dataSource is a HikariDataSource
+        if (!(this.dataSource instanceof HikariDataSource hikariDataSource)) {
+            return;
+        }
+
+        // Shutdown the HikariDataSource
+        hikariDataSource.close();
+    }
 }

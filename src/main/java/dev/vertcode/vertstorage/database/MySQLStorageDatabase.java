@@ -39,6 +39,17 @@ public class MySQLStorageDatabase extends SQLStorageDatabase {
     }
 
     @Override
+    public void shutdown() {
+        // Check if the dataSource is a HikariDataSource
+        if (!(this.dataSource instanceof HikariDataSource hikariDataSource)) {
+            return;
+        }
+
+        // Shutdown the HikariDataSource
+        hikariDataSource.close();
+    }
+
+    @Override
     public @Nullable Connection getConnection() {
         try {
             return this.dataSource.getConnection();
