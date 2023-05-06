@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.vertcode.vertstorage.StorageObject;
 import dev.vertcode.vertstorage.adapters.StorageObjectTypeAdapter;
+import dev.vertcode.vertstorage.annotations.StorageField;
 import dev.vertcode.vertstorage.annotations.StorageId;
 import dev.vertcode.vertstorage.annotations.StorageMetadata;
 import dev.vertcode.vertstorage.service.StorageService;
@@ -17,6 +18,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class JsonStorageService<T extends StorageObject> extends StorageService<T> {
@@ -90,7 +92,8 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
             T instance = this.clazz.getDeclaredConstructor().newInstance();
 
             // Loop through all the fields in the class
-            for (Field field : this.clazz.getDeclaredFields()) {
+            for (Map.Entry<Field, StorageField> entry : this.fieldMappings.entrySet()) {
+                Field field = entry.getKey();
                 // We only want to populate the ID field
                 if (!field.isAnnotationPresent(StorageId.class)) {
                     continue;

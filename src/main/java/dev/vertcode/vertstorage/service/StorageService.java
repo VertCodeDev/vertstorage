@@ -1,11 +1,15 @@
 package dev.vertcode.vertstorage.service;
 
 import dev.vertcode.vertstorage.StorageObject;
+import dev.vertcode.vertstorage.annotations.StorageField;
 import dev.vertcode.vertstorage.annotations.StorageMetadata;
 import dev.vertcode.vertstorage.object.ObjectCache;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +22,7 @@ public abstract class StorageService<T extends StorageObject> {
 
     protected final Class<T> clazz;
     protected final ObjectCache<Object, T> cache;
+    protected final Map<Field, StorageField> fieldMappings = new HashMap<>();
 
     public StorageService(Class<T> clazz) {
         this.clazz = clazz;
@@ -27,6 +32,9 @@ public abstract class StorageService<T extends StorageObject> {
         if (!clazz.isAnnotationPresent(StorageMetadata.class)) {
             throw new IllegalArgumentException(String.format("The class %s does not have a @StorageMetadata annotation!", clazz.getName()));
         }
+
+        // We load the field mappings
+        loadFieldMappings();
     }
 
     public StorageService(Class<T> clazz, long cacheTime, TimeUnit cacheTimeUnit) {
@@ -36,6 +44,28 @@ public abstract class StorageService<T extends StorageObject> {
         // We make sure the clazz has a @StorageMetadata annotation
         if (!clazz.isAnnotationPresent(StorageMetadata.class)) {
             throw new IllegalArgumentException(String.format("The class %s does not have a @StorageMetadata annotation!", clazz.getName()));
+        }
+
+        // We load the field mappings
+        loadFieldMappings();
+    }
+
+    /**
+     * Loads the field mappings for the StorageObject.
+     */
+    private void loadFieldMappings() {
+        // Loop through all the fields in the class
+        for (Field declaredField : this.clazz.getDeclaredFields()) {
+            // Check if the field has a @StorageField annotation
+            if (!declaredField.isAnnotationPresent(StorageField.class)) {
+                continue;
+            }
+
+            // Get the StorageField annotation
+            StorageField metadata = declaredField.getAnnotation(StorageField.class);
+
+            // Add the field to the field mappings
+            this.fieldMappings.put(declaredField, metadata);
         }
     }
 

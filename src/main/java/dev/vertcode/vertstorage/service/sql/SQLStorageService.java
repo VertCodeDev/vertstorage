@@ -51,7 +51,8 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             T instance = this.clazz.getDeclaredConstructor().newInstance();
 
             // Loop through all the fields in the class
-            for (Field field : this.clazz.getDeclaredFields()) {
+            for (Map.Entry<Field, StorageField> entry : this.fieldMappings.entrySet()) {
+                Field field = entry.getKey();
                 // We only want to populate the ID field
                 if (!field.isAnnotationPresent(StorageId.class)) {
                     continue;
@@ -220,13 +221,9 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
         StringBuilder updateQueryBuilder = new StringBuilder("ON DUPLICATE KEY UPDATE ");
 
         // Loop through all the fields in the StorageObject
-        for (Field field : clazz.getDeclaredFields()) {
-            // Check if the field is a StorageField
-            if (!field.isAnnotationPresent(StorageField.class)) {
-                continue;
-            }
-
-            StorageField storageField = field.getAnnotation(StorageField.class);
+        for (Map.Entry<Field, StorageField> entry : this.fieldMappings.entrySet()) {
+            Field field = entry.getKey();
+            StorageField storageField = entry.getValue();
             String fieldName = storageField.columnName();
 
             // If it's not the first field, add a comma
@@ -362,13 +359,9 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
         T object = clazz.getDeclaredConstructor().newInstance();
 
         // Loop through all the fields in the StorageObject
-        for (Field field : clazz.getDeclaredFields()) {
-            // Check if the field is a StorageField
-            if (!field.isAnnotationPresent(StorageField.class)) {
-                continue;
-            }
-
-            StorageField storageField = field.getAnnotation(StorageField.class);
+        for (Map.Entry<Field, StorageField> entry : this.fieldMappings.entrySet()) {
+            Field field = entry.getKey();
+            StorageField storageField = entry.getValue();
             String fieldName = storageField.columnName();
 
             // Get the value from the result set
@@ -400,6 +393,7 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             try (Statement statement = connection.createStatement()) {
                 // Create the table
                 String tableTypeDefinition = StorageSQLUtil.generateSQLTypeDefinition(this.clazz);
+
                 statement.executeUpdate("CREATE TABLE `" + tableName + "` (" + tableTypeDefinition + ")");
             } catch (SQLException e) {
                 throw new IllegalStateException("Failed to create table " + tableName + "!", e);
@@ -430,13 +424,9 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             StorageObject storageObject = clazz.getDeclaredConstructor().newInstance();
 
             // Loop through all the fields in the StorageObject and make sure they are all correct in the table
-            for (Field field : this.clazz.getDeclaredFields()) {
-                // Check if the field is a StorageField, if not, skip it
-                if (!field.isAnnotationPresent(StorageField.class)) {
-                    continue;
-                }
-
-                StorageField storageField = field.getAnnotation(StorageField.class);
+            for (Map.Entry<Field, StorageField> entry : this.fieldMappings.entrySet()) {
+                Field field = entry.getKey();
+                StorageField storageField = entry.getValue();
                 String fieldName = storageField.columnName();
                 String sqlType = StorageSQLUtil.getSQLType(field.getType());
 

@@ -50,7 +50,6 @@ public class StorageSQLUtil {
      * @return The table definition for the StorageObject
      */
     public static String generateSQLTypeDefinition(Class<? extends StorageObject> clazz) {
-
         try {
             StringBuilder builder = new StringBuilder();
             // Generate an instance of the StorageObject, so we can get the default values for the fields
