@@ -1,12 +1,12 @@
-package dev.vertcode.vertstorage.service;
+package dev.vertcode.vertstorage.service.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.vertcode.vertstorage.StorageObject;
-import dev.vertcode.vertstorage.StorageService;
 import dev.vertcode.vertstorage.adapters.StorageObjectTypeAdapter;
 import dev.vertcode.vertstorage.annotations.StorageId;
 import dev.vertcode.vertstorage.annotations.StorageMetadata;
+import dev.vertcode.vertstorage.service.StorageService;
 import dev.vertcode.vertstorage.util.StorageUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +17,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class JsonStorageService<T extends StorageObject> extends StorageService<T> {
 
@@ -28,7 +29,6 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
     public JsonStorageService(Class<T> clazz, File dataFolder) {
         super(clazz);
-
 
         StorageMetadata metadata = getMetadata();
         String folderName = metadata.tableName();
@@ -44,6 +44,25 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
         this.gson = gsonBuilder.create();
     }
+
+    public JsonStorageService(Class<T> clazz, File dataFolder, long cacheTime, TimeUnit cacheTimeUnit) {
+        super(clazz, cacheTime, cacheTimeUnit);
+
+        StorageMetadata metadata = getMetadata();
+        String folderName = metadata.tableName();
+
+        this.dataFolder = dataFolder;
+        this.tableFolder = new File(this.dataFolder, folderName);
+        this.nextIdFile = new File(this.tableFolder, "nextId.json");
+
+        GsonBuilder gsonBuilder = StorageUtil.getGsonBuilder();
+
+        // Register the StorageObject type adapter
+        gsonBuilder.registerTypeAdapter(clazz, new StorageObjectTypeAdapter<>(clazz));
+
+        this.gson = gsonBuilder.create();
+    }
+
 
     @Override
     public void startupService() {
@@ -107,7 +126,7 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
     }
 
     @Override
-    public @Nullable T find(Object id) {
+    public @Nullable T findInDatabase(Object id) {
         File file = new File(this.tableFolder, id.toString() + ".json");
         if (!file.exists()) {
             return null;
@@ -117,7 +136,7 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
     }
 
     @Override
-    public @Nullable T findOne(String fieldName, Object value) {
+    public @Nullable T findOneInDatabase(String fieldName, Object value) {
         if (!this.tableFolder.exists()) {
             return null;
         }
@@ -150,6 +169,9 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
                     continue;
                 }
 
+                // Cache the object
+                cacheObject(object);
+
                 // Return the object
                 return object;
             } catch (Exception ignored) {
@@ -160,7 +182,7 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
     }
 
     @Override
-    public List<T> findAll() {
+    public List<T> findAllInDatabase() {
         List<T> objects = new ArrayList<>();
         // If the table folder doesn't exist, return an empty list
         if (!this.tableFolder.exists()) {
@@ -184,6 +206,8 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
                 // Add the value to the list
                 objects.add(value);
+                // Cache the object
+                cacheObject(value);
             } catch (Exception ignored) {
             }
         }
@@ -193,7 +217,7 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
     }
 
     @Override
-    public List<T> findAll(String fieldName, Object value) {
+    public List<T> findAllInDatabase(String fieldName, Object value) {
         List<T> objects = new ArrayList<>();
         // If the table folder doesn't exist, return an empty list
         if (!this.tableFolder.exists()) {
@@ -230,6 +254,8 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
                 // Add the object to the list
                 objects.add(object);
+                // Cache the object
+                cacheObject(object);
             } catch (Exception ignored) {
             }
         }
@@ -254,11 +280,15 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
         File file = new File(this.tableFolder, object.getIdentifier() + ".json");
         // If the file doesn't exist, return
         if (!file.exists()) {
+            // If the object is cached, remove it from the cache
+            uncacheObject(object);
             return;
         }
 
         // Delete the file
         file.delete();
+        // If the object is cached, remove it from the cache
+        uncacheObject(object);
     }
 
     @Override

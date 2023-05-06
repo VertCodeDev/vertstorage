@@ -1,11 +1,11 @@
-package dev.vertcode.vertstorage.service;
+package dev.vertcode.vertstorage.service.sql;
 
 import dev.vertcode.vertstorage.StorageObject;
-import dev.vertcode.vertstorage.StorageService;
 import dev.vertcode.vertstorage.annotations.StorageField;
 import dev.vertcode.vertstorage.annotations.StorageId;
 import dev.vertcode.vertstorage.annotations.StorageMetadata;
 import dev.vertcode.vertstorage.database.SQLStorageDatabase;
+import dev.vertcode.vertstorage.service.StorageService;
 import dev.vertcode.vertstorage.util.StorageSQLUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +15,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the storage service for SQL (MySQL & MariaDB) for the provided StorageObject.
@@ -27,6 +28,13 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
 
     public SQLStorageService(SQLStorageDatabase storageDatabase, Class<T> clazz) {
         super(clazz);
+
+        this.storageDatabase = storageDatabase;
+    }
+
+    public SQLStorageService(SQLStorageDatabase storageDatabase, Class<T> clazz, long cacheTime, TimeUnit cacheTimeUnit) {
+        super(clazz, cacheTime, cacheTimeUnit);
+
         this.storageDatabase = storageDatabase;
     }
 
@@ -80,15 +88,15 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
 
     @Nullable
     @Override
-    public T find(Object id) {
+    public T findInDatabase(Object id) {
         StorageMetadata metadata = getMetadata();
 
-        return findOne(metadata.idColumnName(), id);
+        return findOneInDatabase(metadata.idColumnName(), id);
     }
 
     @Nullable
     @Override
-    public T findOne(String fieldName, Object value) {
+    public T findOneInDatabase(String fieldName, Object value) {
         // Get the connection
         Connection connection = storageDatabase.getConnection();
         if (connection == null) {
@@ -112,7 +120,14 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
                 }
 
                 // Create a new instance of the StorageObject
-                return createFromResultSet(resultSet);
+                T object = createFromResultSet(resultSet);
+                if (object == null) {
+                    return null;
+                }
+
+                // Cache the object
+                cacheObject(object);
+                return object;
             }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to execute query " + sqlQuery + "!", e);
@@ -120,7 +135,7 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
     }
 
     @Override
-    public List<T> findAll() {
+    public List<T> findAllInDatabase() {
         // Get the connection
         Connection connection = storageDatabase.getConnection();
         if (connection == null) {
@@ -138,8 +153,14 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<T> storageObjects = new ArrayList<>();
                 while (resultSet.next()) {
-                    storageObjects.add(createFromResultSet(resultSet));
+                    T object = createFromResultSet(resultSet);
+
+                    // Add the object to the list
+                    storageObjects.add(object);
+                    // Cache the object
+                    cacheObject(object);
                 }
+
                 return storageObjects;
             }
         } catch (Exception e) {
@@ -148,7 +169,7 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
     }
 
     @Override
-    public List<T> findAll(String fieldName, Object value) {
+    public List<T> findAllInDatabase(String fieldName, Object value) {
         // Get the connection
         Connection connection = storageDatabase.getConnection();
         if (connection == null) {
@@ -168,8 +189,14 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<T> storageObjects = new ArrayList<>();
                 while (resultSet.next()) {
-                    storageObjects.add(createFromResultSet(resultSet));
+                    T object = createFromResultSet(resultSet);
+
+                    // Add the object to the list
+                    storageObjects.add(object);
+                    // Cache the object
+                    cacheObject(object);
                 }
+
                 return storageObjects;
             }
         } catch (Exception e) {
@@ -237,6 +264,7 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
             }
             queryBuilder.append("?");
         }
+
         queryBuilder.append(") ").append(updateQueryBuilder);
 
         // Create the prepared statement
@@ -282,9 +310,10 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
 
             // Add the identifier to the prepared statement
             StorageSQLUtil.insertValueIntoPrepStatement(statement, 1, identifier);
-
             // Execute the query
             statement.executeUpdate();
+            // If the object is cached, remove it from the cache
+            uncacheObject(object);
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to execute query " + sqlQuery + "!", e);
         }
