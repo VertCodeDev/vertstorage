@@ -126,8 +126,6 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
                     return null;
                 }
 
-                // Cache the object
-                cacheObject(object);
                 return object;
             }
         } catch (Exception e) {
@@ -158,8 +156,6 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
 
                     // Add the object to the list
                     storageObjects.add(object);
-                    // Cache the object
-                    cacheObject(object);
                 }
 
                 return storageObjects;
@@ -194,8 +190,6 @@ public class SQLStorageService<T extends StorageObject> extends StorageService<T
 
                     // Add the object to the list
                     storageObjects.add(object);
-                    // Cache the object
-                    cacheObject(object);
                 }
 
                 return storageObjects;

@@ -104,7 +104,12 @@ public abstract class StorageService<T extends StorageObject> {
         }
 
         // If the object is not in the cache, we query the database
-        return findInDatabase(id);
+        object = findInDatabase(id);
+        if (object != null) {
+            this.cache.put(id, object);
+        }
+
+        return object;
     }
 
     /**

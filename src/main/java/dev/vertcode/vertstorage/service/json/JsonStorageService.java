@@ -172,9 +172,6 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
                     continue;
                 }
 
-                // Cache the object
-                cacheObject(object);
-
                 // Return the object
                 return object;
             } catch (Exception ignored) {
@@ -209,8 +206,6 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
                 // Add the value to the list
                 objects.add(value);
-                // Cache the object
-                cacheObject(value);
             } catch (Exception ignored) {
             }
         }
@@ -257,8 +252,6 @@ public class JsonStorageService<T extends StorageObject> extends StorageService<
 
                 // Add the object to the list
                 objects.add(object);
-                // Cache the object
-                cacheObject(object);
             } catch (Exception ignored) {
             }
         }
