@@ -23,7 +23,7 @@ pipeline {
 
         stage('nexus-publish') {
             steps {
-                nexusPublisher nexusInstanceId: '1', nexusRepositoryId: 'vertcodedevelopment', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: "${env.WORKSPACE}/build/libs/${env.JAR_NAME}.jar"]], mavenCoordinate: [artifactId: "vertstorage", groupId: 'dev.vertcode', packaging: 'jar', version: env.VERSION]]]
+                nexusPublisher nexusInstanceId: '1', nexusRepositoryId: 'vertcodedev-public', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: "${env.WORKSPACE}/build/libs/${env.JAR_NAME}.jar"]], mavenCoordinate: [artifactId: "vertstorage", groupId: 'dev.vertcode', packaging: 'jar', version: env.VERSION]]]
             }
         }
     }
