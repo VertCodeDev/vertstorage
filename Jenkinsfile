@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         PROJECT_NAME = 'vertstorage'
-        JAR_NAME = 'vertstorage-1.0.0'
-        VERSION = '1.0.0'
+        JAR_NAME = 'vertstorage-1.0.1'
+        VERSION = '1.0.1'
     }
 
     stages {
