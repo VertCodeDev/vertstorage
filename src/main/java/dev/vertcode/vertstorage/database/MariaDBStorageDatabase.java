@@ -15,7 +15,7 @@ public class MariaDBStorageDatabase extends SQLStorageDatabase {
     private final DataSource dataSource;
 
     public MariaDBStorageDatabase(HikariConfig hikariConfig) {
-        this.dataSource = hikariConfig.getDataSource();
+        this.dataSource = new HikariDataSource(hikariConfig);
     }
 
     public MariaDBStorageDatabase(String host, int port, String username, String password, String database) {

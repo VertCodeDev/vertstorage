@@ -15,7 +15,7 @@ public class MySQLStorageDatabase extends SQLStorageDatabase {
     private final DataSource dataSource;
 
     public MySQLStorageDatabase(HikariConfig hikariConfig) {
-        this.dataSource = hikariConfig.getDataSource();
+        this.dataSource = new HikariDataSource(hikariConfig);
     }
 
     public MySQLStorageDatabase(String host, int port, String username, String password, String database) {
