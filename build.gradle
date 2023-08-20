@@ -30,6 +30,7 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.32'
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
     implementation 'org.jetbrains:annotations:24.0.0'
+    implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
 
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
