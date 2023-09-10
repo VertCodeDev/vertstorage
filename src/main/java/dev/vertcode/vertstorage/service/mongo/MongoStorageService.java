@@ -15,10 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Elmar Blume - 20/08/2023
@@ -95,7 +92,7 @@ public class MongoStorageService<T extends StorageObject> extends StorageService
 		final MongoCollection<Document> collection = this.getCollection();
 
 		// Find the first document matching the field name with the value
-		final Document document = collection.find(Filters.eq(fieldName, value)).first();
+		final Document document = collection.find(Filters.eq(fieldName, value instanceof UUID ? String.valueOf(value) : value)).first();
 		if (document == null) return null;
 
 		// Serialize the document to the storage object type
@@ -134,7 +131,7 @@ public class MongoStorageService<T extends StorageObject> extends StorageService
 		final List<T> storageObjects = new ArrayList<>();
 
 		// Loop through all the documents
-		try (MongoCursor<Document> iterator = collection.find(Filters.eq(fieldName, value)).iterator()) {
+		try (MongoCursor<Document> iterator = collection.find(Filters.eq(fieldName, value instanceof UUID ? String.valueOf(value) : value)).iterator()) {
 			while (iterator.hasNext()) {
 				Document document = iterator.next();
 
@@ -170,7 +167,7 @@ public class MongoStorageService<T extends StorageObject> extends StorageService
 
 		// Delete the document from the collection
 		collection.deleteOne(
-				Filters.eq(getMetadata().idColumnName(), object.getIdentifier())
+				Filters.eq(getMetadata().idColumnName(), object.getIdentifier() instanceof UUID ? String.valueOf(object.getIdentifier()) : object.getIdentifier())
 		);
 	}
 
