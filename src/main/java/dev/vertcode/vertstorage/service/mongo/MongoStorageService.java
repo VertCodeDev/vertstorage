@@ -155,7 +155,7 @@ public class MongoStorageService<T extends StorageObject> extends StorageService
 
 		// Insert the document into the collection
 		collection.replaceOne(
-				Filters.eq(getMetadata().idColumnName(), object.getIdentifier()),
+				Filters.eq(getMetadata().idColumnName(), object.getIdentifier() instanceof UUID ? String.valueOf(object.getIdentifier()) : object.getIdentifier()),
 				document, new ReplaceOptions().upsert(true)
 		);
 	}
